@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; 
 import { FormsModule } from '@angular/forms'; 
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +38,7 @@ export class App implements OnInit {
 
   // --- AUTH ACTIONS ---
   login() {
-    this.http.post('http://localhost:8080/api/login', this.loginData)
+    this.http.post(`${environment.apiUrl}/login`, this.loginData)
       .subscribe({
         next: (user: any) => {
           this.currentUser = user;
@@ -71,7 +72,7 @@ export class App implements OnInit {
   }
 
   fetchMessages() {
-    let url = 'http://localhost:8080/api/messages';
+    let url = `${environment.apiUrl}/messages`;
     
     // If Private Chat: Add ?user1=Me&user2=Them
     if (this.selectedUser) {
