@@ -1,0 +1,52 @@
+<div *ngIf="!currentUser" class="login-container">
+  <div class="login-box">
+    <h2>👋 Welcome Back</h2>
+    <input [(ngModel)]="loginData.username" placeholder="Username">
+    <input [(ngModel)]="loginData.password" type="password" placeholder="Password">
+    <button (click)="login()">Login / Register</button>
+  </div>
+</div>
+
+<div *ngIf="currentUser" class="app-container">
+
+  <div class="sidebar">
+    <div class="my-profile">
+      <h3>👤 {{ currentUser.username }}</h3>
+      <button (click)="logout()" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="menu-label">CHATS</div>
+    
+    <div class="user-item" [class.active]="!selectedUser" (click)="selectChat(null)">
+      <div class="avatar group-avatar">📢</div>
+      <span>Global Group</span>
+    </div>
+
+    <div *ngFor="let user of users" class="user-item" [class.active]="selectedUser?.username === user.username" (click)="selectChat(user)">
+      <div class="avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
+      <span>{{ user.username }}</span>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <h2>{{ selectedUser ? selectedUser.username : '📢 Global Group Chat' }}</h2>
+    </div>
+
+    <div class="messages-area">
+      <div *ngFor="let msg of messages" class="message-card" 
+           [class.my-message]="msg.sender === currentUser.username">
+        <div class="bubble">
+          <small *ngIf="msg.sender !== currentUser.username" class="sender-name">{{ msg.sender }}</small>
+          {{ msg.text }}
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Type a message...">
+      <button class="send-btn" (click)="sendMessage()">Send ➤</button>
+    </div>
+  </div>
+
+</div>
