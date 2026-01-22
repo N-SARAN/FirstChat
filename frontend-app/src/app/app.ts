@@ -16,8 +16,8 @@ export class App implements OnInit {
   cdr = inject(ChangeDetectorRef);
 
   // STATE
-  currentUser: any = null;    // Who am I?
-  selectedUser: any = null;   // Who am I talking to? (null = Group Chat)
+  currentUser: any = null;    
+  selectedUser: any = null;   
   
   // DATA
   users: any[] = [];
@@ -28,7 +28,6 @@ export class App implements OnInit {
   newMessage: string = "";
 
   ngOnInit() {
-    // Check if already logged in
     const saved = localStorage.getItem('user');
     if (saved) {
       this.currentUser = JSON.parse(saved);
@@ -38,11 +37,12 @@ export class App implements OnInit {
 
   // --- AUTH ACTIONS ---
   login() {
-    this.http.post(`${environment.apiUrl}/login`, this.loginData)
+    // FIX 1: Added '/api' here
+    this.http.post(`${environment.apiUrl}/api/login`, this.loginData)
       .subscribe({
         next: (user: any) => {
           this.currentUser = user;
-          localStorage.setItem('user', JSON.stringify(user)); // Save session
+          localStorage.setItem('user', JSON.stringify(user)); 
           this.loadData();
         },
         error: () => alert('Login Failed!')
@@ -59,22 +59,23 @@ export class App implements OnInit {
   loadData() {
     this.fetchUsers();
     this.fetchMessages();
-    // Auto-refresh every 2 seconds (Polling)
     setInterval(() => this.fetchMessages(), 2000);
   }
 
   fetchUsers() {
-    this.http.get<any[]>('http://localhost:8080/api/users')
+    // FIX 2: Removed 'localhost', used environment.apiUrl
+    this.http.get<any[]>(`${environment.apiUrl}/api/users`)
       .subscribe(data => {
-        // Remove myself from list
-        this.users = data.filter(u => u.username !== this.currentUser.username);
+        if(this.currentUser) {
+            this.users = data.filter(u => u.username !== this.currentUser.username);
+        }
       });
   }
 
   fetchMessages() {
-    let url = `${environment.apiUrl}/messages`;
+    // FIX 3: Added '/api' here
+    let url = `${environment.apiUrl}/api/messages`;
     
-    // If Private Chat: Add ?user1=Me&user2=Them
     if (this.selectedUser) {
       url += `?user1=${this.currentUser.username}&user2=${this.selectedUser.username}`;
     }
@@ -86,7 +87,7 @@ export class App implements OnInit {
   }
 
   selectChat(user: any) {
-    this.selectedUser = user; // null means Group Chat
+    this.selectedUser = user; 
     this.fetchMessages();
   }
 
@@ -96,10 +97,11 @@ export class App implements OnInit {
     const msg = {
       text: this.newMessage,
       sender: this.currentUser.username,
-      receiver: this.selectedUser ? this.selectedUser.username : null // null = Group
+      receiver: this.selectedUser ? this.selectedUser.username : null 
     };
 
-    this.http.post('http://localhost:8080/api/messages', msg)
+    // FIX 4: Removed 'localhost', added '/api'
+    this.http.post(`${environment.apiUrl}/api/messages`, msg)
       .subscribe(() => {
         this.newMessage = "";
         this.fetchMessages();
