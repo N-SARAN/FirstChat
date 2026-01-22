@@ -1,27 +1,31 @@
 package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity; // Import this
-import org.springframework.http.HttpStatus;     // Import this
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-// 1. FIX: Allow your Vercel frontend (or use "*" to allow everyone for testing)
-@CrossOrigin(origins = {"http://localhost:4200", "https://first-chat-murex.vercel.app"}) 
+// FIX: Allow both your Localhost (for testing) and Vercel (for production)
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://first-chat-murex.vercel.app",
+    "https://first-chat-iqfq4vp0g-sarans-projects-fc55938d.vercel.app" 
+})
 public class ChatController {
 
     @Autowired private MessageRepository msgRepo;
     @Autowired private UserRepository userRepo;
 
-    // 2. LOGIN / REGISTER
+    // 1. LOGIN / REGISTER
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginUser) {
         User user = userRepo.findByUsername(loginUser.username);
         
-        // Auto-register logic
+        // Auto-register if new
         if (user == null) {
             User newUser = userRepo.save(loginUser);
             return ResponseEntity.ok(newUser);
@@ -29,22 +33,19 @@ public class ChatController {
         
         // Check Password
         if (!user.password.equals(loginUser.password)) {
-            // 3. IMPROVEMENT: Return 401 Unauthorized instead of crashing
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Password");
         }
         
         return ResponseEntity.ok(user);
     }
 
-    // ... (Keep the rest of your methods the same) ...
-    
-    // GET ALL USERS
+    // 2. GET ALL USERS
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return userRepo.findAll();
     }
 
-    // GET MESSAGES
+    // 3. GET MESSAGES
     @GetMapping("/messages")
     public List<Message> getMessages(@RequestParam(required = false) String user1, 
                                      @RequestParam(required = false) String user2) {
@@ -60,7 +61,7 @@ public class ChatController {
         }
     }
 
-    // SEND MESSAGE
+    // 4. SEND MESSAGE
     @PostMapping("/messages")
     public Message sendMessage(@RequestBody Message msg) {
         return msgRepo.save(msg);

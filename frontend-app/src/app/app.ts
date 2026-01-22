@@ -37,7 +37,7 @@ export class App implements OnInit {
 
   // --- AUTH ACTIONS ---
   login() {
-    // FIX 1: Added '/api' here
+    // FIX: Uses Render URL + /api/login
     this.http.post(`${environment.apiUrl}/api/login`, this.loginData)
       .subscribe({
         next: (user: any) => {
@@ -45,7 +45,7 @@ export class App implements OnInit {
           localStorage.setItem('user', JSON.stringify(user)); 
           this.loadData();
         },
-        error: () => alert('Login Failed!')
+        error: () => alert('Login Failed! Check Password or Connection.')
       });
   }
 
@@ -59,11 +59,11 @@ export class App implements OnInit {
   loadData() {
     this.fetchUsers();
     this.fetchMessages();
+    // Poll every 2 seconds
     setInterval(() => this.fetchMessages(), 2000);
   }
 
   fetchUsers() {
-    // FIX 2: Removed 'localhost', used environment.apiUrl
     this.http.get<any[]>(`${environment.apiUrl}/api/users`)
       .subscribe(data => {
         if(this.currentUser) {
@@ -73,7 +73,6 @@ export class App implements OnInit {
   }
 
   fetchMessages() {
-    // FIX 3: Added '/api' here
     let url = `${environment.apiUrl}/api/messages`;
     
     if (this.selectedUser) {
@@ -100,7 +99,6 @@ export class App implements OnInit {
       receiver: this.selectedUser ? this.selectedUser.username : null 
     };
 
-    // FIX 4: Removed 'localhost', added '/api'
     this.http.post(`${environment.apiUrl}/api/messages`, msg)
       .subscribe(() => {
         this.newMessage = "";
